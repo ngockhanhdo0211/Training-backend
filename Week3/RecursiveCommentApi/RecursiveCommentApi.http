@@ -1,0 +1,88 @@
+@host = http://localhost:5189
+@postId = 00000000-0000-0000-0000-000000000000
+@userId = fcfa772e-edd5-4298-8543-fa7451dedc66
+@commentId = 00000000-0000-0000-0000-000000000000
+
+### Health
+GET {{host}}/api/health
+Accept: application/json
+
+### Posts: pagination + filtering + dynamic sorting
+GET {{host}}/api/posts?pageNumber=1&pageSize=20&search=&sortBy=title&sortDescending=false
+Accept: application/json
+
+### Post by ID
+GET {{host}}/api/posts/{{postId}}
+Accept: application/json
+
+### Create Post
+POST {{host}}/api/posts
+Content-Type: application/json
+
+{
+  "title": "Post đầu tiên của tuần 3",
+  "content": "Tạo Post thông qua Controller, Service, Repository và EF Core.",
+  "userId": "{{userId}}"
+}
+
+### Update Post
+PUT {{host}}/api/posts/{{postId}}
+Content-Type: application/json
+
+{
+  "title": "Post đã được cập nhật",
+  "content": "Nội dung được cập nhật bằng HTTP PUT.",
+  "userId": "{{userId}}"
+}
+
+### Delete Post - chỉ dùng với Post test
+DELETE {{host}}/api/posts/{{postId}}
+
+### Comments of Post - flat DTO list for CRUD
+GET {{host}}/api/comments/post/{{postId}}
+Accept: application/json
+
+### Comment by ID
+GET {{host}}/api/comments/{{commentId}}
+Accept: application/json
+
+### Create root Comment
+POST {{host}}/api/comments
+Content-Type: application/json
+
+{
+  "content": "Bình luận gốc của tuần 3",
+  "postId": "{{postId}}",
+  "userId": "{{userId}}",
+  "parentCommentId": null
+}
+
+### Create Reply - thay commentId bằng ID comment cha
+POST {{host}}/api/comments
+Content-Type: application/json
+
+{
+  "content": "Reply nhiều cấp",
+  "postId": "{{postId}}",
+  "userId": "{{userId}}",
+  "parentCommentId": "{{commentId}}"
+}
+
+### Update Comment
+PUT {{host}}/api/comments/{{commentId}}
+Content-Type: application/json
+
+{
+  "content": "Nội dung comment đã cập nhật"
+}
+
+### Recursive tree - gọi hai lần để so sánh MISS/HIT
+GET {{host}}/api/posts/{{postId}}/comments/tree
+Accept: application/json
+
+### Flatten tree using Stack
+GET {{host}}/api/posts/{{postId}}/comments/flat
+Accept: application/json
+
+### Delete Comment - xóa reply trước rồi mới xóa parent
+DELETE {{host}}/api/comments/{{commentId}}

@@ -14,8 +14,25 @@ nodeB.Children.Add(nodeE);
 
 nodeC.Children.Add(nodeF);
 
-// Bắt đầu duyệt từ root có depth bằng 0
+// 1. In cây theo cấu trúc phân cấp
+Console.WriteLine("Cấu trúc cây:");
 PrintTree(nodeA, 0);
+
+// 2. Flatten bằng đệ quy
+List<TreeNode> flattenedNodes = new();
+HashSet<TreeNode> visitedNodes = new();
+FlattenRecursive(nodeA, flattenedNodes, visitedNodes);
+
+PrintNodes("Flatten bằng đệ quy:", flattenedNodes);
+
+// 3. Flatten không dùng đệ quy, thay call stack bằng Stack<TreeNode>
+List<TreeNode> iterativeNodes = FlattenIterative(nodeA);
+
+PrintNodes("Flatten bằng Stack:", iterativeNodes);
+
+// Hai thuật toán phải tạo ra cùng thứ tự node.
+bool sameOrder = flattenedNodes.SequenceEqual(iterativeNodes);
+Console.WriteLine($"\nHai kết quả giống nhau: {sameOrder}");
 
 static void PrintTree(TreeNode node, int depth)
 {
@@ -29,6 +46,7 @@ static void PrintTree(TreeNode node, int depth)
         PrintTree(child, depth + 1);
     }
 }
+
 static void FlattenRecursive(
     TreeNode node,
     List<TreeNode> result,
@@ -49,11 +67,53 @@ static void FlattenRecursive(
         FlattenRecursive(child, result, visited);
     }
 }
+
+static List<TreeNode> FlattenIterative(TreeNode root)
+{
+    List<TreeNode> result = new();
+    HashSet<TreeNode> visited = new();
+    Stack<TreeNode> stack = new();
+
+    stack.Push(root);
+
+    while (stack.Count > 0)
+    {
+        TreeNode current = stack.Pop();
+
+        // Bỏ qua node đã duyệt để tránh lặp vô hạn nếu dữ liệu có cycle.
+        if (!visited.Add(current))
+        {
+            continue;
+        }
+
+        result.Add(current);
+
+        // Stack là LIFO. Push từ phải sang trái để khi Pop vẫn duyệt
+        // các node con theo thứ tự từ trái sang phải như bản đệ quy.
+        for (int i = current.Children.Count - 1; i >= 0; i--)
+        {
+            stack.Push(current.Children[i]);
+        }
+    }
+
+    return result;
+}
+
+static void PrintNodes(string title, IEnumerable<TreeNode> nodes)
+{
+    Console.WriteLine($"\n{title}");
+
+    foreach (TreeNode node in nodes)
+    {
+        Console.WriteLine(node.Name);
+    }
+}
+
 class TreeNode
 {
     public string Name { get; set; }
 
-    public List<TreeNode> Children { get; set; } = new List<TreeNode>();
+    public List<TreeNode> Children { get; } = new();
 
     public TreeNode(string name)
     {
